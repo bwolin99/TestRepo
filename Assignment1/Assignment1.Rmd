@@ -15,7 +15,7 @@ I have simplified the table to just have the name, offensive rating, and defensi
 
 ```{r}
 library(RCurl) 
-x <- getURL("https://raw.githubusercontent.com/bwolin99/TestRepo/main/spi_global_rankings.csv")
+x <- getURL("https://raw.githubusercontent.com/bwolin99/TestRepo/main/Assignment1/spi_global_rankings.csv")
 y <- read.csv(text = x)
 df <- data.frame(Name = y$name, Off = y$off, 
                  Def = y$def)
