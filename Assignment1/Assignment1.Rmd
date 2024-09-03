@@ -1,0 +1,29 @@
+---
+title: "Assignment1"
+author: "Ben Wolin"
+date: "2024-09-02"
+output: html_document
+---
+
+## Introduction
+The article I am working with predicts the league results of the 2023 season for club soccer. The artical is linked here: https://projects.fivethirtyeight.com/soccer-predictions/.
+
+
+
+## Data Manipulation
+I have simplified the table to just have the name, offensive rating, and defensive rating. I then added a new column to determine if the team has an above average or below average offensive rating.
+
+```{r}
+library(RCurl) 
+x <- getURL("https://raw.githubusercontent.com/bwolin99/TestRepo/main/spi_global_rankings.csv")
+y <- read.csv(text = x)
+df <- data.frame(Name = y$name, Off = y$off, 
+                 Def = y$def)
+df$Off_Rating[df$Off > mean(df$Off)] <- "Above Average"
+df$Off_Rating[df$Off < mean(df$Off)] <- "Below Average"
+head(df)
+```
+
+## Conclusions
+Some work I could do with this dataset in the futures is using the spi numbers for each team to create comparissons between different leagues. This could provide insight into which league can be considered the "strongest", meaning it is made up of teams with the highest ratings.
+
