@@ -1,0 +1,49 @@
+---
+title: "Assignment2"
+author: "Ben Wolin"
+date: "2024-09-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+The purpose of this assignment is to connect to and SQL database to retrieve a data set containg review scores for 6 movies. Then, to store this data into an R dataframe.
+
+## Install Libraries
+```{r}
+library(DBI)
+library(RMySQL)
+library(RODBC)
+library("dplyr")
+library("dbplyr")
+```
+## Step 1: Create and store data set in the MySQL Database
+This can be done by running the SQL script at this link: https://github.com/bwolin99/TestRepo/blob/main/Assignment2/movies.sql
+
+## Step 2: Retriving the data from SQL
+Here we connect to the local MySQL statbase using the dbConnect function. Then we load the "movies" table into an R dataframe.
+
+```{r}
+fin = dbConnect(RMySQL::MySQL(),
+                            dbname= 'movies',
+                            host= '127.0.0.1',
+                            port=3306,
+                            user='root',
+                            password='Bdwbdw993728')
+
+pull = dbSendQuery(fin, "select * from movies")
+
+movies <- fetch(pull)
+
+movies
+```
+## Step 3: Create an approach for missing data
+In this part we will replace all of the null values in this data. This will be done by replacing all null values with something that will indicate the reviewer has not yet seen it.
+
+```{r}
+movies[is.na(movies)] <- 'Not Viewed'
+movies
+```
