@@ -1,0 +1,89 @@
+---
+title: "Assignment3"
+author: "Ben Wolin"
+date: "2024-09-15"
+output: html_document
+---
+## Part 1
+Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/], provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+This was done by first pulling the raw data into R Studio using the read.csv function. Then we use the "grep" function to search the raw data for instances containing the set pattern.
+```{r}
+library(tidyverse)
+us_majors <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv")
+data_statistics_majors <- grep(pattern = 'data|statistics', us_majors$Major, value = TRUE, ignore.case = TRUE)
+view(data_statistics_majors)
+```
+
+## Part 2
+Write code that transforms the data below:
+
+[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"
+
+Into a format like this:
+
+c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry"
+
+First we will load in the data for this excersize, then we will use a for loop to go through each instance of this list to create the desired text output.
+```{r}
+library(stringr)
+fruit <- c('bell pepper', 'bilberry','blackberry','blood orange','blueberry','cantaloupe','chili pepper',
+           'cloudberry','elderberry','lime','lychee','mulberry','olive','salal berry')
+text = "c("
+for (x in fruit){
+  text = paste(text,'"',x,'", ')
+}
+text_clean <- paste(str_sub(text,end = -3),")")
+view(text_clean)
+```
+
+## Part 3
+Describe, in words, what these expressions will match:
+
+(.)\1\1
+"(.)(.)\\2\\1"
+(..)\1
+"(.).\\1.\\1"
+"(.)(.)(.).*\\3\\2\\1"
+
+(.)\1\1 Will return strings that contain 3 letters that are repeating back to back. Such as "aaa" or "222"
+
+"(.)(.)\\2\\1" Will return strings that are 4 characters long with the second character repeating in the third position and the first character repeating in the fourth position. Such as "abba" or "1441"
+
+(..)\1 Will return strings of 4 characters, where the characters in the first 2 positions match those in the later two. Such as "mimi" or "1212"
+
+"(.).\\1.\\1" Will return strings with 5 characters where the characters in the first, third, and fifth positions are the same. Such as "papip" or "16131"
+
+"(.)(.)(.).*\\3\\2\\1" Will retrun strings that contain any amount characters where the characters in the first, second, and third position are also in the last, second to last, and third to last position respectively. Such as "1239321" or "abczxynhcba"
+
+## Part 4
+Construct regular expressions to match words that:
+1) Start and end with the same character.
+```{r}
+x <- c("141","dad","xyyyyx","12341","00")
+str_view(x, "(.).*\\1")
+```
+2) Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+```{r}
+x <- c("Church","never ever","123683249683801","What phat")
+str_view(x, ".*(.)(.).*\\1\\2.*")
+```
+3) Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
+```{r}
+x <- c("eleven","pasta sauce","164913271830")
+str_view(x, ".*(.).*\\1.*\\1.*")
+```
+
+
+
+
+
+
+
+
