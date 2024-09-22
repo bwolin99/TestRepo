@@ -1,0 +1,75 @@
+---
+title: "Data 607 - Project 1"
+author: "Ben Wolin"
+date: "2024-09-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Introduction
+In this project, you’re given a text file with chess tournament results where the information has some structure. Your
+job is to create an R Markdown file that generates a .CSV file (that could for example be imported into a SQL database)
+with the following information for all of the players:
+Player’s Name, Player’s State, Total Number of Points, Player’s Pre-Rating, and Average Pre Chess Rating of Opponents
+For the first player, the information would be:
+Gary Hua, ON, 6.0, 1794, 1605
+
+## Pulling in the data
+```{r}
+library(readr, quietly = TRUE)
+library(stringr, quietly = TRUE)
+
+TournamentInfo = read_csv(file = 'https://raw.githubusercontent.com/dcorrea614/MSDS/master/tournamentinfo.txt',col_names = FALSE)
+```
+## Configuring the data
+It seems that this data has 2 relevant lines for each palyer. The first contains the player name and their results. The second contains the player id, ranking, and board side. So now we will transform the data into a matrix and separate these lines.
+```{r}
+TourneyMatrix = matrix(unlist(TournamentInfo), byrow=TRUE)
+line1 = TourneyMatrix[seq(5,length(TourneyMatrix),3)]
+line2 = TourneyMatrix[seq(6,length(TourneyMatrix),3)]
+```
+
+## Extracting the data
+Now we must take the data in these 2 matrices and create lists for each relevant column for our final dataframe.
+Since there is a large buffer of spaces between the name and any other letters, this is fairly easy to extract.
+```{r}
+Name = str_trim(str_extract(line1, '[A-z].{1,25}'),'right') 
+head(Name)
+```
+Next we pull the state, these are just the first 2 letters on the second line of info.
+```{r}
+State = str_extract(line2, '[A-z].{2}')
+head(State)
+```
+Then we pull the amount of points the player has achieved in this tournament
+```{r}
+Points = as.numeric(str_extract(str_sub(line1,35,44),'\\d+\\.*\\d*'))
+head(Points)
+```
+Now we'll pull the players pre rating from the tournament from line2.
+```{r}
+Rating = as.numeric(str_sub(line2,20,23))
+head(Rating)
+```
+Now we must calculate the Average Pre Chess Rating for each players opponents, the rating can be found by it being the only number with a | character immediately following it on line 1. We then use these numbers to pull each rating and average them for each individual players opponents.
+```{r}
+Rounds = str_extract_all(line1, '\\d+\\|')
+Rounds = str_extract_all(Rounds,'\\d+')
+OppRating = c()
+for(i in c(1:64)){
+  OppRating[i] = round(mean(Rating[as.numeric(Rounds[[i]])]),0)
+}
+OppRating
+```
+## Putting it all together
+Now we will construct the datafram and write the csv file.
+```{r}
+tournamentFinal = data.frame(Name,State,Points,Rating,OppRating)
+head(tournamentFinal)
+```
+```{r}
+write_csv(tournamentFinal,'tournamentFinal.csv')
+```
+
