@@ -1,0 +1,61 @@
+---
+title: "Assignment 5"
+author: "Ben Wolin"
+date: "2024-09-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intoduction
+The purpose of this assignment is to load in a given csv and perform analysis to compare 2 airlines. These comaperisons will be based on the arrival delays for both airlines. When complete an R Markdown file will be posted to Github and Rpubs.
+
+## Loading Libraries
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Loading in data from the CSV
+```{r}
+Flights = read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/Assignment%205/Assignment5_Flights.csv');
+```
+
+## Transforming data to prepare it for analysis
+```{r}
+names(Flights)[1:2] <- c('Airline','Delay')
+Flights = Flights[-3, ]
+Flights[2,1] = 'Alaska'
+Flights[4,1] = 'AM West'
+Flights = gather(Flights,'Destination','Count',3:7)
+Flights = spread(Flights,key = Delay,value = Count)
+names(Flights)[4] = 'on_time'
+head(Flights)
+```
+
+## Analyzing the Data
+```{r}
+Flights = Flights %>%
+  mutate(Delay_Rate = delayed/(on_time + delayed))
+
+Flights = Flights %>%
+  mutate(On_Time_Rate = 1 - Delay_Rate)
+head(Flights)
+```
+Now we will calculate the mean and median delay rates for each airline.
+```{r}
+Alaska = Flights[Flights$Airline == 'Alaska',]
+AM_West = Flights[Flights$Airline == 'AM West',]
+Airlines = c('AM West','Alaska')
+Mean_DRate = c(mean(AM_West$Delay_Rate),mean(Alaska$Delay_Rate))
+Mean_ORate = c(mean(AM_West$On_Time_Rate),mean(Alaska$On_Time_Rate))
+Median_DRate = c(median(AM_West$Delay_Rate),median(Alaska$Delay_Rate))
+Median_ORate = c(median(AM_West$On_Time_Rate),median(Alaska$On_Time_Rate))
+Results = data.frame(Airlines,Mean_DRate,Mean_ORate,Median_DRate,Median_ORate)
+head(Results)
+```
+
+Looking at these results we can see that AM West has a lower On Time Rate and a higher Delay Rate. This observation can be seen in both median and mean of the rates for all destinations. In conclusion, Alaska is on time more often and is therefore a better Airline in that regard.
