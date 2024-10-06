@@ -1,0 +1,104 @@
+---
+title: "Project 2 - 607"
+author: "Ben Wolin"
+date: "2024-10-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Dataset 1: Laptop Dataset
+This dataset was gotten from this link: https://www.kaggle.com/datasets/ehtishamsadiq/uncleaned-laptop-price-dataset/data
+
+First we will import it from github and remove the blank rows.
+```{r}
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+Laptops = read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/Project2/laptopData.csv')
+Laptops = Laptops %>% na.omit()
+```
+
+Next we want to alter the CPU column to just display the amount of giga hertz that each CPU is capable of producing.
+```{r}
+Laptops$Cpu = str_extract(Laptops$Cpu, "(.)(.)(.)(.)(.)(GHz)" )
+Laptops$Cpu = str_extract(Laptops$Cpu, "(?= )(.*)(GHz)" )
+Laptops$Cpu = gsub("V6","",Laptops$Cpu)
+Laptops$Cpu = as.numeric(gsub("[^0-9.<>]", "", Laptops$Cpu))
+```
+
+Now we can use boxplots to compare the different processing speeds for different types of laptops.
+
+```{r}
+ggplot(Laptops, aes(x=TypeName, y=Cpu)) + 
+  geom_boxplot()
+```
+
+From this we can see that gaming devices and worksations have the best processing speed on average. While Netbooks are far behind the norm when it comes to processing speed. This means that if you want a computer with faster processing times a gaming or workstation laptop is the way to go.
+
+## Dataset 2: Development Indicators
+Dataset Link: https://databank.worldbank.org/source/world-development-indicators/preview/on#
+
+This dataset contains many indicators for growth in a country, specifically looking at the G20.
+```{r}
+Indications = read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/Project2/DevelopmentIndicators.csv')
+head(Indications)
+```
+
+We will be tranforming this data to compare countries in a specific year. To do this a dataframe displaying each countries GDP, GDP growth, and Population. We will then make columns for GDP per capita.
+```{r}
+## First select only the necessary columns
+Ind_Clean = data.frame(Indications$Country.Name, Indications$Series.Name, Indications$X2023..YR2023)
+names(Ind_Clean) = c('Country','Questions','Amount')
+
+## Then we will spread the data so we can make columns out of the indicating questions. Next we select the necessary columns
+Ind_Clean = spread(Ind_Clean,Questions,Amount)
+Ind_Final = data.frame(Ind_Clean$Country,Ind_Clean$`GDP (current US$)`,Ind_Clean$`GDP growth (annual %)`,Ind_Clean$`Population, total`)
+names(Ind_Final) = c('Country','GDP','GDP_Growth','Population')
+
+## Finally we create our calculated column and rank the countris based on that
+Ind_Final$GDP = as.numeric(Ind_Final$GDP)
+Ind_Final$Population = as.numeric(Ind_Final$Population)
+Ind_Final = mutate(Ind_Final, GDP_per_cap = Ind_Final$GDP/Ind_Final$Population)
+Ind_Final = Ind_Final %>% arrange(desc(GDP_per_cap))
+Ind_Final
+```
+
+From this tranformation we can see the countries with the smallest GDP per capita are Brazil, Indonesia, and India. The countries with the highest GDP per capita are Switzerland, the US, and Argentina.
+
+## Dataset 3: Movie Reviews
+For this data set we will take the 1's and 0's method of denoting a movies catagory and condense it into one column.
+```{r}
+Movies = read.csv('https://raw.githubusercontent.com/hms-dbmi/UpSetR/refs/heads/master/inst/extdata/movies.csv',sep= ';')
+## First we gather the genres to reduce the number if columns and turn their values into an Is_category metric. Then we can filter out all of the rows that are not a selected genre of the movie
+Movies_Clean = gather(Movies,'Categroies','Is_Category',3:19)
+Movies_Clean = Movies_Clean[Movies_Clean$Is_Category != 0,]
+
+## Now we will select the desired columns and group the category columns
+Genre_List = list()
+for (i in Movies_Clean$Name){
+  genres = ''
+  df = Movies_Clean[Movies_Clean$Name == i,]
+  for (x in df$Categroies){
+    genres = paste(genres,x,sep = ", ")
+  }
+  Genre_List[[length(Genre_List)+1]] = genres
+}
+Movies_Clean$Genre =  Genre_List 
+Movies_Clean$Genre = substring(Movies_Clean$Genre, 3)
+
+## Next we create the final table and remove duplicates
+Movies_Final = data.frame(Movies_Clean$Name, Movies_Clean$ReleaseDate, Movies_Clean$Genre,Movies_Clean$AvgRating,Movies_Clean$Watches)
+names(Movies_Final) = c('Names','ReleaseYear','Genres','AvgRating','Watches')
+Movies_Final = Movies_Final[!duplicated(Movies_Final$Names),]
+Movies_Final = Movies_Final %>% arrange(desc(AvgRating))
+head(Movies_Final,20)
+```
+Looking at the top 20 movies all of the top 10 have only 1 or 2 views. I'd say you can't get any valuable information from that column unless it has at least 10 vies. This would make the highest rated movies with that criteria Sanjuro,	Seven Samurai, The Shawshank Redemption, The Godfather, and A Close Shave. 
+
+
+
