@@ -1,0 +1,60 @@
+---
+title: "Assignment 7"
+author: "Ben Wolin"
+date: "2024-10-13"
+output: html_document
+---
+## Introduction
+The purpose of this assignment it to familiarize ourselves with different formats of stored data. I have created 3 identical tables in 3 different file types (XML, HTML, and JSON). We will now be loading these files into our R environment.
+
+## XML
+Here we load in our XML file and take a look at the structure.
+```{r}
+library(xml2)
+library(XML)
+library(dplyr)
+books_XML <- read_xml(url("https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/Assignment%207/Books.XML"))
+xml_structure(books_XML)
+```
+Next we extract the columns and put them into an R dataframe.
+```{r}
+Names <- books_XML %>%
+  xml_find_all("//Title") %>%
+  xml_text()
+Author1 <- books_XML %>%
+  xml_find_all("//Author1") %>%
+  xml_text()
+Author2 <- books_XML %>%
+  xml_find_all("//Author2") %>%
+  xml_text()
+Genre <- books_XML %>%
+  xml_find_all("//Genre") %>%
+  xml_text()
+
+books_xml_final <- data.frame("Title" = Names, "Author 1" = Author1, "Author 2" = Author2, "Genre" = Genre) 
+
+books_xml_final
+```
+
+## HTML
+Here we load in our HTML table and tidy it to be a neet dataframe.
+```{r}
+library(rvest)
+books_html <- read_html(url("https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/Assignment%207/Books.html"))
+
+books_html_final <- books_html %>%
+  html_element("body") %>%
+  html_table()
+
+books_html_final
+```
+
+## JSON
+With the jsonlite library, we don't even need to tidy our JSON file, the fromJson function will do this for us.
+```{r}
+library(jsonlite)
+books_json <- fromJSON(url("https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/Assignment%207/Books.json"))
+
+books_json
+```
+
