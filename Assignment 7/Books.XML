@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>  
+<table>
+  <book>
+    <Title>Stardance</Title>
+    <Author1>Spider Robinson</Author1>
+    <Author2>Jeanne Robinson</Author2>
+    <Genre>Sci Fi</Genre>
+  </book>
+  <book>
+    <Title>Hyperion</Title>
+    <Author1>Dan Simmons</Author1>
+    <Author2></Author2>
+    <Genre>Sci Fi, Thriller</Genre>
+  </book>
+  <book>
+    <Title>Do Androids Dream of Electric Sheep?</Title>
+    <Author1>Philip K. Dick</Author1>
+    <Author2></Author2>
+    <Genre>Sci Fi, Thriller</Genre>
+  </book>
+</table>
