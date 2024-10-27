@@ -1,0 +1,33 @@
+---
+title: "Assignment 9"
+author: "Ben Wolin"
+date: "2024-10-27"
+output: html_document
+---
+
+## Intro
+The purpose of this lab is to create an account with the NYT NPI's website and controct an R dataframe using the JSON file that is pulled in.
+
+## Loading Libraries
+```{r}
+library("jsonlite")
+library("httr")
+library("stringr")
+library("ggplot2")
+library("dplyr")
+```
+## Loading in API data
+```{r}
+stories <- GET('https://api.nytimes.com/svc/topstories/v2/science.json?api-key=n5H7ZDIyqy8LAcTpAu9mIdUi7oTA6WOx')
+
+summary(stories)
+```
+## Making a Dataframe
+```{r}
+stories_text <- content(stories, as = "text")
+stories_fromJson <- fromJSON(stories_text, flatten = TRUE)
+stories_df <- data.frame(stories_fromJson$results, stringsAsFactors = FALSE)
+head(stories_df)
+```
+
+
