@@ -3,6 +3,12 @@ title: "Assignment 10"
 author: "Ben Wolin"
 date: "2024-11-01"
 output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 
 ## Introduction
 In this assignment we will be performing a sentiment analysis of Jane Austin books that is taken from Text Mining with R, Chapter 2 looks at Sentiment Analysis. We will then be performing a similar analysis of the book Dracula by Bram Stoker.
@@ -178,32 +184,59 @@ dracula <- data.frame('text' = book, 'book' = 'Dracula')
 names(dracula)[names(dracula) == 'row.names'] <- 'text'
 ```
 
+Now we will create a chart showing the sentiment of Dracula over time.
+```{r}
+dracula_chapters <- dracula %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
 
+dracula_sentiment <- dracula_chapters %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
 
+ggplot(dracula_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+As we can see Dracula contains an overwhelming amount of negative sentiment. This a stark difference from the Jane Austin books which is to be expected.
 
-
-
-
-
-
-
-
-
-
+Now we will chart the most common words for each sentiment in the lexicon. This will show us if there are any anomalies, such as "miss" in the Jane Austin books.
 
 ```{r}
-get_sentiments("nrc")
+dracula_counts <- dracula_chapters %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+dracula_counts %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(x = "Contribution to sentiment",
+       y = NULL)
 ```
+This graph shows us that the most common words show uncertainty, which makes sense since Dracula is somewhat of a mystery where the characters are unsure of the supernatural causes of there predicament. Something surprising here is how common the word "good" is in the novel considering the sentiment over time chart. Out of all the positive and negative words "good" is the most common. This most likely means the lower ranked words in the negative sentiment category are much more common than there positive counterparts. This should be best visualized by a wordcloud.
 
 ```{r}
-x <- get_sentiments("nrc")
-unique(x$sentiment)
-
+library(wordcloud)
+library(reshape2)
+dracula_chapters %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20","red","blue","cyan","pink", "gray80"),
+                   max.words = 100)
 ```
-
-
-```{r}
-get_sentiments("loughran")
-```
-
-
+From this wordcloud we can see that negative and constraining words are the most common sentiments in Dracula. This is then followed closely behind by uncertainty and postive words. A very word is "whilst" which is a a word commonly used to describe something happening at the same time as something else, typically with a slight negative tone.
