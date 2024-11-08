@@ -5,15 +5,26 @@ author: Ben Wolin
 
 ### Data Preparation
 This data comes from the world bank data catalog, and is a combination of data from these two different datasets.
-https://energydata.info/dataset/world-climate-watch/resource/47608ee8-92b9-4611-ba6f-720662193e25
+https://energydata.info/dataset/world-climate-watch/resource/47608ee8-92b9-4611-ba6f-720662193e25\
+
 https://energydata.info/dataset/world-climate-watch/resource/1631a4e8-a59a-4026-aa36-162df9b15340
 
 ```{r setup, echo=TRUE, results='hide', warning=FALSE, message=FALSE}
 # load data
 library(tidyr)
+library(dplyr)
+
 Emissions_raw <- read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/606%20Final/Emissions.csv',row.names = NULL)
-Emissions <- gather(Emissions_raw, key = 'year', value = 'Aggricultural Emissions',3:31)
-head(Emissions)
+Emissions <- gather(Emissions_raw, key = 'year', value = 'Aggricultural_Emissions',3:31)
+
+Consumption_raw <- read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/606%20Final/Meat_Consumption.csv',row.names = NULL)
+Consumption <- gather(Consumption_raw, key = 'year', value = 'Meat_Consumption',2:28)
+
+data_final <- Consumption %>% inner_join(Emissions, 
+        by=c('year'='year', 'country'='country'))
+```
+```{r}
+head(data_final)
 ```
 
 
@@ -21,34 +32,39 @@ head(Emissions)
 
 **You should phrase your research question in a way that matches up with the scope of inference your dataset allows for.**
 
-Does the amount of meat eaten in a country on a given year correlate with the amount of agricultural CO2 that is released in that year. 
+Does the amount of meat eaten in a country on a given year correlate with the amount of agricultural CO2 that is released in that year?
 
 
 ### Cases 
 
 **What are the cases, and how many are there?**
 
-Each case represents a specific year in a specific country 
+Each case represents a specific year in a specific country, in the final data frame there are 250 observations.
 
 
-### Data collection 
+### Data collection
 
 **Describe the method of data collection.**
 
+This data was collected from the Nationally Determined Contributions (NDCs) which were required under the paris climate accords. This is detailed in this link.
+https://energydata.info/dataset/world-climate-watch
 
 
 ### Type of study 
 
 **What type of study is this (observational/experiment)?**
 
-
+This is an observational study.
 
 ### Data Source 
 
 **If you collected the data, state self-collected. If not, provide a citation/link.**
 
+The data was collected from these links.
 
+https://energydata.info/dataset/world-climate-watch/resource/47608ee8-92b9-4611-ba6f-720662193e25\
 
+https://energydata.info/dataset/world-climate-watch/resource/1631a4e8-a59a-4026-aa36-162df9b15340
 
 ### Describe your variables?
 
@@ -56,11 +72,28 @@ Each case represents a specific year in a specific country
 
 **If you are are running a regression or similar model, which one is your dependent variable?**
 
+These variables are quantitative, not qualitative.
 
 ### Relevant summary statistics 
 
 **Provide summary statistics for each the variables. Also include appropriate visualizations related to your research question (e.g. scatter plot, boxplots, etc). This step requires the use of R, hence a code chunk is provided below. Insert more code chunks as needed.**
 
 ```{r}
-
+library(psych)
+describe(data_final$Aggricultural_Emissions)
 ```
+
+```{r}
+library(psych)
+describe(data_final$Meat_Consumption)
+```
+
+```{r}
+library(ggplot2)
+ggplot(data_final, aes(x=Meat_Consumption)) + geom_histogram()
+```
+```{r}
+library(ggplot2)
+ggplot(data_final, aes(x=Aggricultural_Emissions)) + geom_histogram()
+```
+
