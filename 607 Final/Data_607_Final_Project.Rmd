@@ -1,6 +1,7 @@
 ---
-title: DATA 606 Data Project Final
-author: Ben Wolin
+title: "DATA 607 Data Project Final"
+author: "Ben Wolin"
+output: pdf_document
 ---
 
 
@@ -14,17 +15,30 @@ Climate change is one of the biggest existential challenges we face today. It is
 ### Introduction
 In this project we will be taking data from the World Bank Data Catalog. This data provides with information on agricultural emissions and meat consumption by country by year. We will be using this data to answer the question, does the amount of meat eaten in a country on a given year correlate with the amount of agricultural CO2 that is released in that year?
 
-### Data Display
+### Data Loading & Manipulation
 
-Here we will load in our necessary packages and data sets. Then we will join data from our two sources to create one final table with all the information we need four our analysis.
+First we will load in the necessary packages for this project.
 ```{r}
 library(tidyr)
 library(dplyr)
+library(aws.s3)
+library(ggplot2)
+```
 
-Emissions_raw <- read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/606%20Final/Emissions.csv',row.names = NULL)
+Next we will load in our data. The emissions data is taken from an AWS S3 bucket, while the consumption data is a CSV we are loading in from GitHub.
+```{r}
+Sys.setenv("AWS_ACCESS_KEY_ID" = "AKIAVY2PGVWISHYZ56BY","AWS_SECRET_ACCESS_KEY" = "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", "AWS_DEFAULT_REGION"="us-east-2")
+
+Emissions_raw <- 
+    aws.s3::s3read_using(read.csv, object = "s3://data-607/Emissions.csv")
+
+Consumption_raw <- read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/607%20Final/Meat_Consumption.csv',row.names = NULL)
+```
+
+Now we will use the gather function to create useful columns for our analysis. The resulting clean data from our two sources are then joined together. This will allows us to create linear models from the data located in these 2 sources. 
+```{r}
 Emissions <- gather(Emissions_raw, key = 'year', value = 'Aggricultural_Emissions',3:31)
 
-Consumption_raw <- read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/606%20Final/Meat_Consumption.csv',row.names = NULL)
 Consumption <- gather(Consumption_raw, key = 'year', value = 'Meat_Consumption',2:28)
 
 data_final <- Consumption %>% inner_join(Emissions, 
