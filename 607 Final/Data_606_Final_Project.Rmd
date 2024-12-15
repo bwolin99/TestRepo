@@ -1,0 +1,81 @@
+---
+title: DATA 606 Data Project Final
+author: Ben Wolin
+---
+
+
+```{r echo=FALSE}
+# load data
+
+```
+### Abstract
+Climate change is one of the biggest existential challenges we face today. It is fundamentally reshaping our world in ways that cannot always be predicted. This has the potential to lead to massive consequences such as food insecurity, housing insecurity due to rising sea levels, mass extinction, etc. One of the best ways we as people could help slow down this shift is by reducing our emissions. This study looks at one possible way of doing that. The meat industry has a massive footprint on our emissions. These emissions stem from every aspect of the industry, from transportation of products to the actual animals themselves. What this study attempts to do is show a correlation between a country’s overall meat consumption and the number of agricultural emissions that country produces. Using data from the World Bank Data Catalog we were able to take match 27 years of agricultural emissions and meat consumption data to create one data set to use in this study. What we found was that these two factors have a correlation coefficient of 0.9523607, showing a strong positive correlation. This correlation was then shown to have an extremely small p-value of <2.2e-16, showing that it is not only strong, but statistically significant as well. However, there were some issues with this study. The countries present in the data tended to be part of 2 groups, either they were economically very strong or modest. There were not many countries in the middle ground. This could potentially skew our result, however, with the data at hand we did see that positive, strong correlation that we expected. This means that in the end our hypothesis was confirmed.
+
+### Introduction
+In this project we will be taking data from the World Bank Data Catalog. This data provides with information on agricultural emissions and meat consumption by country by year. We will be using this data to answer the question, does the amount of meat eaten in a country on a given year correlate with the amount of agricultural CO2 that is released in that year?
+
+### Data Display
+
+Here we will load in our necessary packages and data sets. Then we will join data from our two sources to create one final table with all the information we need four our analysis.
+```{r}
+library(tidyr)
+library(dplyr)
+
+Emissions_raw <- read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/606%20Final/Emissions.csv',row.names = NULL)
+Emissions <- gather(Emissions_raw, key = 'year', value = 'Aggricultural_Emissions',3:31)
+
+Consumption_raw <- read.csv('https://raw.githubusercontent.com/bwolin99/TestRepo/refs/heads/main/606%20Final/Meat_Consumption.csv',row.names = NULL)
+Consumption <- gather(Consumption_raw, key = 'year', value = 'Meat_Consumption',2:28)
+
+data_final <- Consumption %>% inner_join(Emissions, 
+        by=c('year'='year', 'country'='country'))
+head(data_final)
+```
+
+Next we will visualize our data using a few plots. Here we can see 2 histograms that are very similar, with a lot of data points on both the low end and high end of the spectrum, with few in the middle. This may point to an income inequality for the countries included in this analysis. Since meat and power used for agriculture are costly this could be showing a large gap between 2 levels of economy.
+```{r}
+library(ggplot2)
+ggplot(data_final, aes(x=Meat_Consumption)) + geom_histogram()
+ggplot(data_final, aes(x=Aggricultural_Emissions)) + geom_histogram()
+
+```
+
+When plotted on a scatter plot it seems like there is a positive linear relationship between agricultural emissions and meat consumption at first glance. Again, we are also see 2 distinct cluster, presumably between wealthier and poorer nations.
+```{r}
+ggplot(data_final, aes(x=Meat_Consumption,y = Aggricultural_Emissions)) + geom_jitter()
+```
+
+
+### Data Analysis
+
+Now we'll move onto our data analysis. First we will calculate the pearson's product-moment correlation of this data set.
+```{r}
+cor.test(x = data_final$Meat_Consumption, y=data_final$Aggricultural_Emissions)
+```
+This shows us that we have a correlation coefficient of about 0.95. This confirms our suspicions that there is a large, positive correlation between these two factors. Next we will create a linear regression model of this data to observe the p-value and get a equation.
+
+```{r}
+Emission_lm = lm(data_final$Aggricultural_Emissions ~ data_final$Meat_Consumption)
+summary(Emission_lm)
+```
+As we can see here the p-value for this relationship is below the lower threshold of this command which is <2.2x10^-16. This is far below the threshold of 0.05, showing that the large correlation we saw before is statistically significant. Also, the adjusted R squared is 0.9066, which means this model is a very strong fit for the data. The linear model generated is as follows: Aggricultural_Emissions = 0.3737 + 0.0005799(Meat_Consumption)
+
+Now we will take a look at the residuals plots to determine if the conditions of least squares are reasonable.
+```{r}
+par(mfrow = c(2,2))
+plot(Emission_lm)
+```
+The residuals vs fitted graph is what you would expect. Since the data is skewed towards 2 extremes with not many data points in the middle it does make these graphs slightly less useful. However we do see the values scattered across the fitted line, meaning this should meet the conditions of least squares. The QQ plot does have a slightly rightward skew, meaning that the data is not completely evenly distributed throughout it's quartiles. However, this could be due to us having a small sample of countries to work with.  Overall, these graphs do highlight the issues with using a smaller data set skewed toward 2 sides of the spectrum.
+
+```{r}
+ggplot(data_final, aes(x=Meat_Consumption,y = Aggricultural_Emissions)) + geom_jitter() + geom_smooth(method = "lm")
+```
+
+### Conclusion
+In conclusion, this project found that there is a correlation between the amount of meat a country consumes and its agricultural emissions. This correlation was show to be positive and strong, with a correlation coefficient of 0.9523607. It was also shown to be a statistically significant correlation, with a p-value of <2.2e-16. The relationship was mapped out with a linear regression model following the formula Agricultural_Emissions = 0.3737 + 0.0005799(Meat_Consumption). However, there were some issues with this study. First, we were only able to collect the data for 10 different countries over a 27 year time frame. This gave us a decent amount of data to work with, however, these countries typically fell into 2 groups. It would greatly benefit the validity of the study to have more data from countries that have moderate level of consumption, as opposed to the 2 extreme groups that are present. This was most present in the scatter plot and the residual diagnostics graphs. In these graphs we saw how the 2 extremes affected the QQ plot, skewing it and leading to lopsided quartiles. Despite this drawback, we are still able to conclude that a higher level of meat consumption will lead to greater agricultural emissions.
+
+### References
+This data comes from the world bank data catalog, and is a combination of data from these two different datasets.
+https://energydata.info/dataset/world-climate-watch/resource/47608ee8-92b9-4611-ba6f-720662193e25\
+
+https://energydata.info/dataset/world-climate-watch/resource/1631a4e8-a59a-4026-aa36-162df9b15340
