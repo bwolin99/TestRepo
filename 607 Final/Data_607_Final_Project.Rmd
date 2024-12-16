@@ -4,11 +4,6 @@ author: "Ben Wolin"
 output: pdf_document
 ---
 
-
-```{r echo=FALSE}
-# load data
-
-```
 ### Abstract
 Climate change is one of the biggest existential challenges we face today. It is fundamentally reshaping our world in ways that cannot always be predicted. This has the potential to lead to massive consequences such as food insecurity, housing insecurity due to rising sea levels, mass extinction, etc. One of the best ways we as people could help slow down this shift is by reducing our emissions. This study looks at one possible way of doing that. The meat industry has a massive footprint on our emissions. These emissions stem from every aspect of the industry, from transportation of products to the actual animals themselves. What this study attempts to do is show a correlation between a country’s overall meat consumption and the number of agricultural emissions that country produces. Using data from the World Bank Data Catalog we were able to take match 27 years of agricultural emissions and meat consumption data to create one data set to use in this study. What we found was that these two factors have a correlation coefficient of 0.9523607, showing a strong positive correlation. This correlation was then shown to have an extremely small p-value of <2.2e-16, showing that it is not only strong, but statistically significant as well. However, there were some issues with this study. The countries present in the data tended to be part of 2 groups, either they were economically very strong or modest. There were not many countries in the middle ground. This could potentially skew our result, however, with the data at hand we did see that positive, strong correlation that we expected. This means that in the end our hypothesis was confirmed.
 
